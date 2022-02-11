@@ -32,7 +32,7 @@ let currentStage = null;
  * フェーザ図で使う矢印を表す
  */
 class Arrow {
-    static headSize = 10;  // 矢印の頭のサイズ
+    static headSize = 20;  // 矢印の頭のサイズ
 
     /**
      * コンストラクタ
@@ -42,8 +42,9 @@ class Arrow {
      * @param {number} y2 終点のy座標
      * @param {number} width 線の幅[px]
      * @param {string} color 色. "orange" または "brown"
+     * @param {boolean} isDraggable `true`-ドラッグで移動できる `false`-移動不可
      */
-    constructor(x1, y1, x2, y2, width, color) {
+    constructor(x1, y1, x2, y2, width, color, isDraggable) {
         this.container = new PIXI.Container();  // 矢印の線と頭を格納したコンテナ
 
         this.x1 = x1;  // 始点のx座標[px]
@@ -65,7 +66,22 @@ class Arrow {
         this.container.addChild(this.head);
 
         this.setPosition(x1, y1, x2, y2);
-        this.update()  // 描画
+        this.update();
+
+        if (isDraggable) {
+            this.head.interactive = isDraggable;
+            this.head.buttonMode = isDraggable;
+
+            this.head.on('pointerdown', () => {  // 矢印の先端をマウスでクリックしたとき
+                this.head.on('pointermove', (e) => {  // ドラッグ中に位置を変更するイベントを追加
+                    const position = e.data.getLocalPosition(app.stage);
+                    this.setPosition(this.x1, this.y1, position.x, position.y);
+                })
+                window.addEventListener('pointerup', () => {
+                    this.head.off('pointermove');
+                });
+            });
+        }
     }
 
     /**
@@ -106,9 +122,11 @@ class Arrow {
         this.head.width = Arrow.headSize;
         this.head.height = Arrow.headSize;
 
-        this.container.pivot.set(0, Arrow.headSize / 2);
+        this.container.pivot.set(this.x1, this.y1);
         this.container.rotation = this.theta;
     }
+
+
 
 }
 
@@ -118,7 +136,7 @@ class StagePQUnknown {
         // PixiJS コンテナ
         this.container = new PIXI.Container();
         // 矢印
-        this.arrowDemI = new Arrow(0, 0, 200, 200, 6, 'orange');
+        this.arrowDemI = new Arrow(10, 10, 200, 200, 6, 'orange', true);
         this.container.addChild(this.arrowDemI.container);
     }
 }
