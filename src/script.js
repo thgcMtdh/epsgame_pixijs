@@ -32,6 +32,8 @@ let currentStage = null;
  * フェーザ図で使う矢印を表す
  */
 class Arrow {
+    static headSize = 10;  // 矢印の頭のサイズ
+
     /**
      * コンストラクタ
      * @param {number} x1 始点のx座標
@@ -42,6 +44,8 @@ class Arrow {
      * @param {string} color 色. "orange" または "brown"
      */
     constructor(x1, y1, x2, y2, width, color) {
+        this.container = new PIXI.Container();  // 矢印の線と頭を格納したコンテナ
+
         this.x1 = x1;  // 始点のx座標[px]
         this.y1 = y1;  // 始点のy座標[px]
         this.len = 0;  // 矢印の長さ[px]
@@ -50,13 +54,15 @@ class Arrow {
 
         if (color === "orange") {
             this.line = new PIXI.Sprite(PIXI.Loader.shared.resources["images/rectangleOrange.png"].texture);
+            this.head = new PIXI.Sprite(PIXI.Loader.shared.resources["images/triangleOrange.png"].texture);
         } else if (color === "brown") {
             this.line = new PIXI.Sprite(PIXI.Loader.shared.resources["images/rectangleBrown.png"].texture);
+            this.head = new PIXI.Sprite(PIXI.Loader.shared.resources["images/triangleBrown.png"].texture);
         } else {
             throw "Color is invalid!";
         }
-        this.line.anchor.x = 0.0;  // 回転中心の設定
-        this.line.anchor.y = 0.5;
+        this.container.addChild(this.line);
+        this.container.addChild(this.head);
 
         this.setPosition(x1, y1, x2, y2);
         this.update()  // 描画
@@ -82,19 +88,26 @@ class Arrow {
         this.x1 = x1;
         this.y1 = y1;
         this.len = Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
-        this.theta = Math.atan2(y2 - y1, x2 - x1);  // 時計回りを正とするので負号
+        this.theta = Math.atan2(y2 - y1, x2 - x1);
         this.update();
     }
 
     /**
-     * 座標と太さを基に、Spriteのパラメータを更新する
+     * 座標と太さにもとづいて、Spriteのパラメータを更新する
      */
     update() {
         this.line.x = this.x1;
-        this.line.y = this.y1;// - this.width / 2;
-        this.line.width = this.len;
+        this.line.y = this.y1 - this.width / 2;
+        this.line.width = this.len - Arrow.headSize;
         this.line.height = this.width;
-        this.line.rotation = this.theta;
+
+        this.head.x = this.x1 + this.len - Arrow.headSize;
+        this.head.y = this.y1 - Arrow.headSize / 2;
+        this.head.width = Arrow.headSize;
+        this.head.height = Arrow.headSize;
+
+        this.container.pivot.set(0, Arrow.headSize / 2);
+        this.container.rotation = this.theta;
     }
 
 }
@@ -105,8 +118,8 @@ class StagePQUnknown {
         // PixiJS コンテナ
         this.container = new PIXI.Container();
         // 矢印
-        this.arrowDemI = new Arrow(0, 0, 200, 200, 10, 'orange');
-        this.container.addChild(this.arrowDemI.line);
+        this.arrowDemI = new Arrow(0, 0, 200, 200, 6, 'orange');
+        this.container.addChild(this.arrowDemI.container);
     }
 }
 
