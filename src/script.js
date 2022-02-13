@@ -49,9 +49,12 @@ class Arrow {
 
         this.x1 = x1;  // 始点のx座標[px]
         this.y1 = y1;  // 始点のy座標[px]
+        this.x2 = x2;  // 終点のx座標[px]
+        this.y2 = y2;  // 終点のy座標[px]
         this.len = 0;  // 矢印の長さ[px]
         this.theta = 0;  // x軸正方向から反時計回りに測った回転角[rad]
-        this.width = width;
+        this.width = width;  // 矢印の太さ[px]
+        this.offset = {x: 0, y: 0};  // クリック位置と矢印先端位置のずれ[px]
 
         if (color === "orange") {
             this.line = new PIXI.Sprite(PIXI.Loader.shared.resources["images/rectangleOrange.png"].texture);
@@ -72,13 +75,21 @@ class Arrow {
             this.head.interactive = isDraggable;
             this.head.buttonMode = isDraggable;
 
-            this.head.on('pointerdown', () => {  // 矢印の先端をマウスでクリックしたとき
-                this.head.on('pointermove', (e) => {  // ドラッグ中に位置を変更するイベントを追加
+            // 矢印の先端をマウスでクリックしたとき
+            this.head.on('pointerdown', (e) => {
+                // クリック位置と矢印先端位置のずれを記録
+                const position = e.data.getLocalPosition(app.stage);
+                this.offset.x = this.x2 - position.x;
+                this.offset.y = this.y2 - position.y;
+                // ドラッグ中に位置を変更するイベントを追加
+                this.head.on('pointermove', (e) => {
                     const position = e.data.getLocalPosition(app.stage);
-                    this.setPosition(this.x1, this.y1, position.x, position.y);
-                })
-                window.addEventListener('pointerup', () => {
+                    this.setPosition(this.x1, this.y1, position.x + this.offset.x, position.y + this.offset.y);
+                });
+                // マウスが離れたときにドラッグをやめる
+                this.head.on('pointerup', () => {
                     this.head.off('pointermove');
+                    this.head.off('pointerup');
                 });
             });
         }
@@ -103,8 +114,10 @@ class Arrow {
     setPosition(x1, y1, x2, y2) {
         this.x1 = x1;
         this.y1 = y1;
+        this.x2 = x2;
+        this.y2 = y2;
         this.len = Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
-        this.theta = Math.atan2(y2 - y1, x2 - x1);
+        this.theta = Math.atan2(y2-y1, x2-x1);
         this.update();
     }
 
