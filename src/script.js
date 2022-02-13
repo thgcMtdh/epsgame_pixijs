@@ -65,11 +65,10 @@ class Arrow {
         } else {
             throw "Color is invalid!";
         }
-        this.container.addChild(this.line);
-        this.container.addChild(this.head);
 
         this.setPosition(x1, y1, x2, y2);
-        this.update();
+        this.container.addChild(this.line);
+        this.container.addChild(this.head);
 
         if (isDraggable) {
             this.head.interactive = isDraggable;
@@ -125,22 +124,21 @@ class Arrow {
      * 座標と太さにもとづいて、Spriteのパラメータを更新する
      */
     update() {
-        this.line.x = this.x1;
-        this.line.y = this.y1 - this.width / 2;
+        this.line.x = 0;
+        this.line.y = - this.width / 2;
         this.line.width = this.len - Arrow.headSize;
         this.line.height = this.width;
 
-        this.head.x = this.x1 + this.len - Arrow.headSize;
-        this.head.y = this.y1 - Arrow.headSize / 2;
+        this.head.x = this.len - Arrow.headSize;
+        this.head.y = - Arrow.headSize / 2;
         this.head.width = Arrow.headSize;
         this.head.height = Arrow.headSize;
 
-        this.container.pivot.set(this.x1, this.y1);
+        this.container.pivot.set(0, 0);
+        this.container.x = this.x1;
+        this.container.y = this.y1;
         this.container.rotation = this.theta;
     }
-
-
-
 }
 
 // ステージの定義
@@ -148,8 +146,17 @@ class StagePQUnknown {
     constructor() {
         // PixiJS コンテナ
         this.container = new PIXI.Container();
+
+        // 座標軸(需要家の受電端電圧を位相基準とする)
+        this.axisX = new PIXI.Graphics();
+        this.axisY = new PIXI.Graphics();
+        this.axisX.lineStyle(1, 0xffffff).moveTo(10, 100).lineTo(1.2 * pxPerPu, 100);
+        this.axisY.lineStyle(1, 0xffffff).moveTo(10, 50).lineTo(10, 150);
+        this.container.addChild(this.axisX);
+        this.container.addChild(this.axisY);
+
         // 矢印
-        this.arrowDemI = new Arrow(10, 10, 200, 200, 6, 'orange', true);
+        this.arrowDemI = new Arrow(10, 100, 200, 200, 6, 'orange', true);
         this.container.addChild(this.arrowDemI.container);
     }
 }
