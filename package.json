@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "description": "",
   "type": "module",
-  "main": "index.js",
+  "main": "src/script.js",
   "scripts": {
     "start": "http-server -o"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "http-server": "^14.1.0"
+    "http-server": "^14.1.0",
+    "mathjs": "^10.1.1"
   }
 }
